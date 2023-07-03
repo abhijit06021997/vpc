@@ -1,0 +1,41 @@
+#site to site vpn connection public to private aws .
+ohio region 
+create vpc name--10.0.0.0/16(CIDR)
+create subnet name --10.0.16.0/20
+create internet getway ---and attach vpc
+go to the route table --select--route --subnet association--edit route destination and select internet getway in target.
+
+2nd region singapur
+create vpc--name--10.1.0.0/16 (CIDR)
+create subnet --name--10.1.16.0/20(CIDR)
+create internet getway and attach vpc
+go to the route table --select--and subnet assocition  and edit route route detination (0.0.0.0/0) and target selct internet getway.
+create ec2 instance --select machine  amazon linux 2 kernal 2nd---key---network edit --vpc (created)--subnet(auto select)--auto assign ip(enable)--inbound rule add ssh and icmp4 anywhere.
+
+go to the 1st region(ohio)
+create virtual private getway (site to site side feature) and attac vpc.
+go to customer getway --create custemer getway--ip adress(2nd region ec2 instance singapur)--create
+go to site site connection --create vpn connection -name-target getway select virtual private getway --in virtual private getway select vp getway (created)--routing option select (static)--subnet ip(enter singapur 2nd region subnet ip)create .
+go to route table (upwords) open created route table --select route propogation --edit route propogation---enable .
+go to site to site --select download configuration ---vedor (openswan)--download configuration file.
+
+ go to singapur  region 2nd region ---copy public ip take ssh on ubuntu 
+ sudo -i 
+ yum install openswan -y 
+ vim /etc/ipsec.conf ---wq!
+ vim /etc/sysctl.conf ----here copy command from 1 net.ipv4.ip to net.ipv4.conf.all.send_redirects = 0  ----wq!----
+ enter command sysctl -p
+ vim /etc/ipsec.d/aws-vpn.conf  --here copy 2nd no.line from conn Tunnel1 to dpdaction=restart_by_peer
+ --and edit its left id -- leftid=Customer end Gateway VPN public IP,right=AWS Virtual private gateway ID- public  subnet--custmer and aws private , rightsubnet=AWS end VPN CIDR-------left and right we can copy from we downloaded configuration file and paste here then wq!
+vim /etc/ipsec.d/aws-vpn.secrets ---here we can paste shared access key from downloaded configuration in line no.5  down line and wq!.
+then enter command chkconfig ipsec on
+service ipsec start 
+service ipsec status --be active status 
+
+craete instance in ohio region--private
+crate instance--amazon linux kernal machine--key--network edit---vpc(created)---subnet select --auto assign ip --(private desable)
+inbound rule ssh and icmp4.
+
+go to the singapur region 2nd ec2--instance ==open--security group--select apply security open --edit --add icmp 4.
+then go to ohio region copy instance private ip---go to terinal ping and copy that ip ping(ip)--
+connected--
